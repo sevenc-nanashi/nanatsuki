@@ -5,11 +5,12 @@ require "ricecream"
 
 BG = ARGV[0] == "bg"
 
+ALL_IMAGE = Image.load("./assets/all.png")
 BASE_IMAGE = Image.load("./assets/base.png")
 HAND_IMAGE = Image.load("./assets/arms.png")
 NEKOMIMI_IMAGE_RAW_L = Image.load("./assets/neko-l.png")
 NEKOMIMI_IMAGE_RAW_R = Image.load("./assets/neko-r.png")
-over = Image.load("./assets/over.png")
+OVER_MASK = Image.load("./assets/over.png")
 
 MAIN_TARGET = RenderTarget.new(BASE_IMAGE.width, BASE_IMAGE.height)
 MAIN_TARGET.bgcolor = [BG ? 255 : 0, 242, 243, 245]
@@ -18,6 +19,7 @@ MASK_SHADER = Shader.new(
     File.read("./mask.hlsl"), { mask: :texture }
   )
 )
+MASK_SHADER.mask = OVER_MASK
 RADIUS = Math.sqrt((BASE_IMAGE.width / 2) ** 2 + (BASE_IMAGE.height / 2) ** 2)
 
 def get_xy(direction)
@@ -86,7 +88,7 @@ count = (range * 2 + 1)
     min_x_l, max_y_l + offset,
     NEKOMIMI_IMAGE_L
   )
-  MAIN_TARGET.draw(0, offset, over)
+  MAIN_TARGET.draw_shader(0, offset, ALL_IMAGE, MASK_SHADER)
   MAIN_TARGET.to_image.save("./#{BG ? "frames_bg" : "frames"}/#{index.to_s.rjust(2, "0")}.png")
   MAIN_TARGET.update
 end
